@@ -17,8 +17,7 @@ const con = mysql.createConnection({
   });
   
   let PORT = 4000;
-//   const app = express();
-//   app.use(router);
+
   router.use(bodyParser.json());
   
   
@@ -554,6 +553,13 @@ const con = mysql.createConnection({
       }
       };
       
+      const isAdmin = (req, res, next) => {
+        if (req.header && req.header.token && req.header.user_id) {  
+          next();
+        } else {
+          res.status(401).send({ message: 'Unauthorized' });
+        }
+      };
       
       //User routes
       router.get("/v1/users", getAllUsers);
@@ -562,12 +568,14 @@ const con = mysql.createConnection({
       router.put("/v1/users/:id", updateUser);
       router.delete("/v1/users/:id", deleteUser);
       
-      //Product routes
+      //Product routes for users/admin
       router.get("/v1/products", getAllProducts);
       router.get("/v1/products/:id", getProductById);
-      router.post("/v1/products", createProduct);
-      router.put("/v1/products/:id", updateProduct);
-      router.delete("/v1/products/:id", deleteProduct);
+      
+      //Product routes for only admin
+      router.post("/v1/products", isAdmin, createProduct);
+      router.put("/v1/products/:id", isAdmin, updateProduct);
+      router.delete("/v1/products/:id", isAdmin, deleteProduct);
       
       //Wishlist routes
       router.get("/v1/wishlist", getWishlist);
